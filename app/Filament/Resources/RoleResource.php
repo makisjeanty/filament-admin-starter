@@ -77,9 +77,12 @@ class RoleResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [];
     }
 
     public static function getPages(): array
