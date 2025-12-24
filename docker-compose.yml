@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: filament-admin-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - filament-network
+    depends_on:
+      - db
+
+  nginx:
+    image: nginx:alpine
+    container_name: filament-admin-nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - filament-network
+    depends_on:
+      - app
+
+  db:
+    image: mysql:8.0
+    container_name: filament-admin-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: filament_admin
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: password
+      MYSQL_USER: filament
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - filament-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: filament-admin-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - "8081:80"
+    networks:
+      - filament-network
+    depends_on:
+      - db
+
+networks:
+  filament-network:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local
